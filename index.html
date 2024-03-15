@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+
+
+<html>
+    
+    <head>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+        <script src="./resources/js/app.js"></script>
+        <link rel="stylesheet" href="./resources/css/style.css">
+    </head>
+
+    <body>
+        <div class="navbar">
+            <div class="title"><span>Product Manager &#8482;</span></div>
+        </div>
+        
+        <div class="content-holder">
+        
+            <div class="row-content" id="busca-field">
+                <input type="text" id="buscar" placeholder="Buscar...">
+            </div>
+            
+            <div class="row-content" id="list-header">
+                
+                <div class="filters" id="filters-field">
+                    
+                    <div class="filters-block">
+                        
+                        <label for="filtrar_quantidade"> Quantidade: </label>
+                        <input type="checkbox" id="filtrar_quantidade">
+                        <select id="filtrar_quantidade_order">
+                            <option value="ASC"> Ordem Crescente </option>
+                            <option value="DESC" selected> Ordem Decrescente </option>
+                        </select>
+                        
+                        <br>
+                        
+                        <label for="filtrar_preco"> Preço: </label>
+                        <input type="checkbox" id="filtrar_preco">
+                        <select id="filtrar_preco_order">
+                            <option value="ASC"> Ordem Crescente </option>
+                            <option value="DESC" selected> Ordem Decrescente </option>
+                        </select>
+                        
+                    </div>
+                    
+                </div>
+                
+                <div class="new-product" id="new-product-field">
+                    <button id="novo-produto"> Novo Produto </button>
+                </div>
+            
+            </div>
+            
+            <div class="result-query" id="product-results">
+                <div class="produto-header">
+                    <div class="produto-info-id">ID</div>
+                    <div class="produto-info-nome">Nome</div>
+                    <div class="produto-info-descricao">Descrição</div>
+                    <div class="produto-info-qtd">Qtd.</div>
+                    <div class="produto-info-preco">Preço</div>
+                </div>
+                <div id="lista-produtos">
+                </div>
+            </div>
+
+        
+        </div>
+        
+        <div id="overlay"></div>
+        <!-- O que deixa o fundo cinza no site -->
+        
+        <div id="modal-produto">
+            <h2 id="titulo_modal"> Novo Produto </h2>
+            
+                <div id="dynamic_field" class="form">
+            
+                    <label for="nome">Nome:</label>
+                    <input class="field" id="nome" type="text" name="nome" required><br>
+                    <span class="aviso" id="nome-aviso"></span><!-- Aqui terá o aviso se o input não for certo -->
+
+                    <label for="quantidade">Quantidade:</label>
+                    <input class="field" id= "quantidade" type="text" name="quantidade" required><br>
+                    <span class="aviso" id="quantidade-aviso"></span>
+
+                    <label for="preco_cadastro">Preço:</label>
+                    <input class="field" id= "preco" type="text" name="preco" required><br>
+                    <span class="aviso" id="preco-aviso"></span>
+
+                    <label for="descricao">Descrição:</label>
+                    <textarea id="descricao" name="descricao" rows="4" cols="40"> </textarea>
+                    
+                </div>
+            
+            <div class="acoes" id="field_acoes">
+                <!-- Aqui vai depender se ele clicou em um novo produto ou em um produto da lista
+                No primeiro caso é cancelar, cadastrar e limpar todos os campos,
+                No segundo caso é cancelar, editar e excluir -->
+                
+                <button id="cancelar" class="cancelar"> Cancelar </button>
+                <button id='cadastrar' class="cadastrar"> Cadastrar </button>
+                <button id='salvar' class="salvar"> Salvar </button>
+                <button id='editar' class="editar"> Editar </button>
+                <button id='excluir' class="excluir"> Excluir </button>
+            </div>
+        </div>
+        
+        <div class="secoes" id="secoes">
+        </div>
+        <script>
+            
+            const myUser = new User();
+            const bigBrother = new BigBrother();
+            
+            //Requerimentos possíveis que o usuário pode fazer
+            const requireProdutos         = () => {
+                myUser.requirement.request = "requirement";
+                myUser.requirement.offset = 0;
+                requireAjax(myUser.requirement,    listarProdutos);
+            }; //Retorna produtos filtrados
+            const requireSecao            = () => {
+                myUser.requirement.request = "listar";
+                requireAjax(myUser.requirement, listarProdutos);
+            };
+            const requireCadastrarProduto = () => requireAjax(myUser.cadastrar, cadastrarProduto);
+            const requireAtualizarProduto = () => requireAjax(myUser.atualizar, atualizarProduto);
+            const requireDeletarProduto = () => requireAjax(myUser.deletar, excluirProduto);
+            
+            
+            //Abrir novo cadastro
+            $("#novo-produto").on("click", function () {
+                
+                //Mostrar Modal de Cadastro
+                Modal("cadastro");
+                
+            });
+            
+            //Selecionar um Produto
+            $("#lista-produtos").on("click", function (e) {
+                
+                id = e.target.id;
+                
+                myUser.atualizar.data.id = id;
+                myUser.atualizar.data.nome = $("#" + id).find('.produto-info-nome').html();
+                myUser.atualizar.data.descricao = $("#" + id).find('.produto-info-descricao').html();
+                myUser.atualizar.data.quantidade = $("#" + id).find('.produto-info-qtd').html();
+                myUser.atualizar.data.preco = $("#" + id).find('.produto-info-preco').html();
+                
+                //Mostrar Modal Geral
+                Modal("geral");
+                
+            });
+            
+            //Fechar o modal
+            $("#cancelar").on("click", function () {
+                
+                //Fecho o modal
+                finishModal();
+                limparCampos();
+                limparAvisos();
+                restaurarFieldsParaOriginal();
+                
+                $("#cadastrar").prop('className', 'cadastrar');
+                $("#salvar").prop('className', 'salvar');
+            });
+            
+            //Habilitar edição de um produto
+            $("#editar").on("click", function () {
+                
+                myUser.esta_editando = true;
+                setFieldsDisabledTo(false);
+                
+                //Troca para ter a opção de salvar    
+                $('#editar').hide();
+                $('#salvar').show();
+                $('#salvar').prop('disabled', true);
+                $("#salvar").prop('className', 'salvar_cancelado');//Desabilitado por padrão
+                
+            });
+            
+            //Excluir um produto    
+            $("#excluir").on("click", function () {
+                
+                //Falta só um evento de confirmação para saber se vai mesmo excluir
+                
+                myUser.deletar.data.id = myUser.atualizar.data.id; //Recupero a ID do Produto que ele clicou, a palavra atualizar aqui está sendo horrível, mas depois eu troco
+                requireDeletarProduto();
+                
+                finishModal(); 
+                limparCampos();
+                limparAvisos();
+                restaurarFieldsParaOriginal();
+                
+            });
+            
+            //Salvar o produto editado
+            $("#salvar").on("click", function() {
+            
+                requireAtualizarProduto();
+                
+                finishModal();
+                limparCampos();
+                limparAvisos();
+                restaurarFieldsParaOriginal();
+                
+            });
+            
+            //Cadastrar um produto
+            $("#cadastrar").on("click", function() {
+            
+                requireCadastrarProduto();
+                
+                finishModal();
+                limparCampos();
+                limparAvisos();
+                restaurarFieldsParaOriginal();
+                
+            });
+            
+            //Filtragem
+            $("#filters-field").on("input select", function (e) {
+                
+                let id = e.target.id;
+                
+                switch (id) {
+                
+                    case "filtrar_quantidade":
+                    
+                        myUser.requirement.data.quantidade = {value: $('#' + id).prop('checked'), order: $('#' + id + '_order').val()};
+                        break;
+                        
+                    case "filtrar_preco":
+                        
+                        myUser.requirement.data.preco = {value: $('#' + id).prop('checked'), order: $('#' + id + '_order').val()};
+                        break;
+                    
+                    case "filtrar_quantidade_order":
+                    
+                        myUser.requirement.data.quantidade = {value: $('#filtrar_quantidade').prop('checked'), order: $('#' + id).val()};
+                        break;
+                    
+                    case "filtrar_preco_order":
+                    
+                        myUser.requirement.data.preco = {value: $('#filtrar_preco').prop('checked'), order: $('#' + id).val()};
+                        break;
+                    
+                    
+                }
+        
+                requireProdutos(); 
+
+            });
+            
+            $("#buscar").on('keyup', function () {
+                
+                
+                myUser.requirement.data.buscar = $("#buscar").val();
+                myUser.requirement.data.offset = 0; //Quando ele pesquisar retorna a seção para a primeira página
+                
+                requireProdutos();
+        
+            });
+            
+            //Navegação entre os offsets
+            $("#secoes").on('click', function (e) {
+                
+                id = e.target.id;
+                
+                myUser.requirement.request = "listar";
+                myUser.requirement.data.offset = parseInt($("#" + id).html()) - 1;
+                
+                requireSecao();
+            });
+            
+            
+            //Verificação dinâmica dos inputs no modal
+            $("#dynamic_field").on("keyup", function (e) { 
+                
+                let campo_atual = e.target.id;
+                myUser.current_field = campo_atual;
+                
+                //Aqui que tem que ter a divisão se está atualizando ou cadastrando
+                if (myUser.esta_cadastrando) myUser.cadastrar.data[campo_atual] = $("#" + campo_atual).val();
+                if (myUser.esta_editando) myUser.atualizar.data[campo_atual] = $("#" + campo_atual).val();
+                
+                let result = bigBrother.verificarInformacoes(myUser);
+                
+                if (result.pass) {
+                    $("#" + campo_atual).prop('className', 'goodfield');
+                    $("#" + campo_atual + "-aviso").text('');
+                }
+                else { 
+                    $("#" + campo_atual).prop('className', 'badfield');
+                    $("#" + campo_atual + "-aviso").text(result.reason);
+                }
+                
+                bigBrother.campos[campo_atual] = result.pass;
+                
+                verificarParaLiberar();
+            
+            });
+            
+            
+            
+            // Funções de carregamento do Modal
+            
+            const Modal = (processo) => { //Os dois processos possíveis são selecionar um produto, ou cadastrar um novo
+                
+                if(processo == "cadastro") carregarModalCadastro();
+                else if(processo == "geral") carregarModalGeral(); 
+                else return;
+                
+                beginModal();
+            };
+            
+            const carregarModalCadastro = () => {
+                
+                myUser.esta_cadastrando = true;
+                setFieldsDisabledTo(false);
+                bigBrother.setCamposTo(false);
+                
+                $("#titulo_modal").text("Novo Produto");
+                $('#cadastrar').fadeIn();
+                $('#cadastrar').prop('disabled', true);
+                $("#cadastrar").prop('className', 'cadastrar_cancelado');
+                
+            };
+            
+            const carregarModalGeral = () => {
+                
+                $("#titulo_modal").text(myUser.atualizar.data.nome);
+                $('#editar').fadeIn();
+                $('#excluir').fadeIn();
+                
+                $("#nome").val(myUser.atualizar.data.nome);
+                $("#quantidade").val(myUser.atualizar.data.quantidade);
+                $("#preco").val(myUser.atualizar.data.preco);
+                $("#descricao").val(myUser.atualizar.data.descricao);
+                
+                setFieldsDisabledTo(true);
+                bigBrother.setCamposTo(true); 
+                //Isso aqui não pode acontecer, eu tenho que fazer a verificação para cada campo, pois o usuário pode trocar o valor no HTML,
+                //e quando ele editar, é só mexer no que ele não editou que libera.
+                
+            }
+            
+            
+            //Rotinas
+            
+            const limparCampos = () => { //Limpa os inputs do modal
+                
+                $("#nome").val('');
+                $("#quantidade").val('');
+                $("#preco").val('');
+                $("#descricao").val('');
+                
+            };
+            
+            const limparAvisos = () => {
+            
+                $("#nome-aviso").text('');
+                $("#quantidade-aviso").text('');
+                $("#preco-aviso").text('');
+                
+            };
+            
+            const restaurarFieldsParaOriginal = () => { //Coloca a coloração dos campos como cinza e preto de novo
+                
+                $("#nome").prop('className', 'field');
+                $("#quantidade").prop('className', 'field');
+                $("#preco").prop('className', 'field');
+                
+            };
+            
+            const setFieldsDisabledTo = (state) => { //Habilita ou desabilita a digitação nos inputs do modal
+                
+                $("#nome").prop('disabled', state);
+                $("#quantidade").prop('disabled', state);
+                $("#preco").prop('disabled', state);
+                $("#descricao").prop('disabled', state);
+                
+            };
+            
+            const finishModal = () => { //Fecha o modal
+                
+                myUser.esta_cadastrando = false;
+                myUser.esta_editando = false;
+                
+                $('#editar').fadeOut();
+                $('#excluir').fadeOut();
+                $('#cadastrar').fadeOut();
+                $('#salvar').fadeOut();
+                
+                $('#overlay, #modal-produto').fadeOut();
+                
+            };
+            
+            const beginModal = () => { //Mostra o modal
+            
+                $('#overlay, #modal-produto').fadeIn();
+                $('#modal-produto').css('display', 'flex');
+                
+            };
+            
+            //Aqui eu verifico todos os campos e se der eu libero
+            const verificarParaLiberar = () => {
+            
+                let result =   (bigBrother.campos.nome &&
+                                bigBrother.campos.quantidade &&
+                                bigBrother.campos.preco);
+                
+                if (myUser.esta_cadastrando) {
+                    
+                    if (result) {
+                        $('#cadastrar').prop('disabled', false);
+                        $("#cadastrar").prop('className', 'cadastrar');
+                    }
+                    else {
+                        $('#cadastrar').prop('disabled', true);
+                        $("#cadastrar").prop('className', 'cadastrar_cancelado');
+                    }
+                    
+                }
+                
+                else if (myUser.esta_editando) {
+                    
+                    if (result) {
+                        $('#salvar').prop('disabled', false);
+                        $("#salvar").prop('className', 'salvar');
+                    }
+                    else {
+                        $('#salvar').prop('disabled', true);
+                        $("#salvar").prop('className', 'salvar_cancelado');
+                    }
+                    
+                }
+                
+            };
+            
+            
+            //Função para enviar pedidos ao servidor
+            
+            function requireAjax(dados, callback) { //callback é qual função será chamada em seguida, serão as funções que lidam com o resultado dos requerimentos ajax
+        
+                $.ajax({
+                    type: "post",
+                    url: "./controller/RequestController.php",
+                    data: dados,
+
+                    success: function (result) {
+                        console.log(result);
+                        let json_result = JSON.parse(result);
+                        callback(json_result);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error: " + error);
+                    }
+                });
+        
+            }
+            
+            
+            
+            //Funções de CallBack
+            
+            //Carregar a lista de Produtos
+            
+            function excluirProduto() {
+                
+                //No caso eu recarrego a lista,
+                requireSecao();
+                
+            }
+            
+            function cadastrarProduto() {
+                
+                requireSecao();
+                //Acho que aqui vai ter que ser Require Produtos, pois quando eu adiciono um produto que vai para uma nova página, ele não aparece, não aparece a nova página,
+                //o jeito é dar um require Produtos e ir para o offset atual
+                
+            }
+            
+            function atualizarProduto() {
+                
+                requireSecao();
+                
+            }
+            
+            function listarProdutos(produtos) {
+            
+            //Aqui tenho que limpar a div antes de tudo
+            $('#lista-produtos').html('');
+            
+                produtos.resultados.forEach(produto => {
+                    
+                    $("#lista-produtos").append("<div class='produto' id='" + produto.id + "'></div>");
+                    
+                    $("#" + produto.id).append(`<div class='produto-info-id'>${produto.id}</div>`);
+                    $("#" + produto.id).append(`<div class='produto-info-nome'>${produto.nome}</div>`);
+                    $("#" + produto.id).append(`<div class='produto-info-descricao'>${produto.descricao}</div>`);
+                    $("#" + produto.id).append(`<div class='produto-info-qtd'>${produto.quantidade}</div>`);
+                    $("#" + produto.id).append(`<div class='produto-info-preco'>${produto.preco}</div>`);
+                    
+                });
+                $('#secoes').html('');
+                
+                for (let i = 1; i <= produtos.offset; i++) {
+                   
+                   $("#secoes").append("<div class='secao' id='secao" + i + "'>" + i + "</div>");
+                   if ((myUser.requirement.data.offset + 1) == i) $("#secao" + i).prop("className", "secao-selecionado");
+                   
+                }
+            
+            }
+            
+            window.addEventListener("load", () => {
+                
+                requireProdutos();
+        
+            });
+        
+        </script>
+    </body>
+    
+
+</html>

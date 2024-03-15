@@ -1,0 +1,490 @@
+body { 
+                
+                margin: 0; 
+                font-family: "Poppins";
+            }
+            
+            .navbar {
+                
+                display: flex;
+                flex-direction: row;
+                
+                width: 100%;
+                min-height: 65px;
+                background-color: #5a5; 
+                margin: 0;
+                
+                align-items: center;
+                
+            }
+            
+            .title {
+                
+                color: white;
+                font-size: 35px;
+                margin-right: auto;
+                margin-left: 25px;
+                
+                text-align: left;
+            }
+            
+            .content-holder {
+            
+                display: flex;
+                flex-direction: column;
+                max-width: 1080px;
+                width: 100%;
+                margin: 15px auto;
+                
+            }
+            
+            /* Campo de Busca */
+            
+            .row-content {
+                
+                display: flex;
+                flex-direction: row;
+                margin: 8px;
+                
+            }
+            
+            #buscar {
+                
+                width: 100%;
+                border: none;
+                border-bottom: 2px solid #ddd;
+                
+                padding: 5px;
+        
+                font-size: 17px;
+                
+                outline: none; /*tira aquela borda roxa*/
+            }
+            
+            #buscar:focus {
+                
+                border-bottom: 2px solid #222;
+                
+            }
+            
+            /* Header */
+            
+            .row-content#list-header {
+                
+                justify-content: space-around;
+                margin-top: 2px;
+            }
+            
+            .filters {
+                
+                /* Alinha os items da esquerda a esquerda e os da direita à direita pois eles ficam sem espaço à esquerda */
+                display: block;
+                margin-right: auto;
+                margin-top: auto;
+                margin-bottom: auto;
+                
+            }
+            
+            .filters-block {
+                
+                display: flex;
+                align-items: center;
+            }
+            
+            .filters-block input[type="checkbox"] { /* APLICAR HOVER */
+                
+                margin-left: 10px;
+                
+                width: 12px;
+                height: 12px;
+                transform: scale(1.5);
+                
+            }
+            
+            .filters-block input[type="checkbox"]:hover {cursor: pointer}
+            
+            .filters-block select { /* APLICAR HOVER */
+                    
+                margin-left: 10px;
+                margin-right: 15px;
+                
+                /*
+                border-radius: 5px;
+                border: 2px solid #aaa;*/
+                
+                border: none;
+                border-bottom: 2px solid #ddd;
+                
+                background-color: transparent;
+                
+                font-size: 15px;
+                
+                padding: 2px;
+                
+                transition: linear 100ms;
+                
+            }
+            
+            .filters-block select:hover {
+                
+                cursor: pointer;
+                border-bottom: 2px solid #0a0;
+                transition: linear 100ms;
+            }
+            
+            .new-product {
+            
+                align-items: center;
+                
+            }
+            
+            .new-product button { /* APLICAR HOVER */
+                
+                border-radius: 5px;
+                border: 2px solid #0a0;
+            
+                padding: 10px;
+                font-size: 15px;
+                
+                color: #fff;
+                background-color: #5a5;
+                transition: linear 100ms;
+                
+            }
+            
+            .new-product button:hover {
+                
+                border: 2px solid #0b0;
+                cursor: pointer;
+                background-color: #393;
+                transition: linear 100ms;
+            }
+            
+            
+            /* Result Query */
+            
+            .result-query {
+            
+                border: 5px solid #000;
+                border-radius: 10px;
+                
+                margin-top: 10px;
+                margin-right: 10px;
+                margin-left: 10px;
+                
+                min-height: 720px;
+                
+                text-align: center;
+            }
+            
+            .produto-header {
+                
+                display: flex;
+                flex-direction: row;
+                
+                width: 100%;
+                margin: 0;
+                
+                background-color: #000;
+                border: 2px solid #000;
+                color: white;
+                
+                padding: 10px 0px;
+                
+            }
+            
+            .produto {
+                
+                display: flex;
+                flex-direction: row;
+                
+                width: 100%;
+                margin: 0;
+                
+                background-color: #eee;
+                border-bottom: 2px solid #000;
+                
+                padding: 15px 0px;
+                
+                transition: linear 100ms;
+                
+            }
+            
+            .produto:hover {
+                    
+                background-color: #efe;
+                transition: linear 100ms;
+                cursor: pointer;
+                
+            }
+            
+            
+            .produto-info-id { width: 5%;
+                    pointer-events: none;
+            }
+            
+            .produto-info-nome { width: 30%;
+                pointer-events: none;
+            }
+            
+            .produto-info-descricao { width: 45%;
+                pointer-events: none;
+            }
+        
+            .produto-info-qtd { width: 5%;
+                pointer-events: none;
+            }
+            
+            .produto-info-preco { width: 15%;
+                pointer-events: none;
+            }
+            
+            
+            /* MODAIS PARA PRODUTO */
+            
+            #overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5); /* Fundo cinza semi-transparente */
+                
+            }
+            
+            #modal-produto {
+                
+                display: none;
+                *display: flex;
+                flex-direction: column;
+            
+                background-color: white;
+                min-width: 720px;
+                min-height: 512px;
+                
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                
+                border-radius: 10px;
+                padding: 15px;
+                
+            }
+            
+            #dynamic_field {
+                
+                display: flex;
+                flex-direction: column;
+                margin-bottom: auto;
+                
+            }
+            
+            #dynamic_field label {
+            
+                margin-top: 10px;
+
+            }
+            
+            /* Campos para preenchimento ----------------------------------------------------*/
+            
+            .field {
+                
+                border: none;
+                outline: none;
+                border-bottom: 2px solid #ddd;
+                               
+            }
+            
+            .goodfield {
+                
+                border: none;
+                outline: none;
+                border-bottom: 2px solid #0a0;
+                
+            }
+            
+            .badfield {
+                
+                border: none;
+                outline: none;
+                border-bottom: 2px solid #a00;
+                
+            }
+            
+            #dynamic_field textarea {
+                
+                outline: none;
+                
+            }
+            
+            .field:focus {
+                
+                border: none;
+                border-bottom: 2px solid #222;
+                
+            }
+            
+            /*Botões do Modal ----------------------------------------------------*/
+            
+            .acoes {
+                display: flex;
+                flex-direction: row;
+                flex-start: bottom;
+                width: 100%;
+            }
+            
+            #modal-produto button {
+                
+                font-size: 16px;
+                border: none;
+                border-radius: 5px;
+                padding: 5px 10px;
+            }
+            
+            .cancelar {
+            
+                background-color: #ddd;
+                margin-right: auto;
+                
+            }
+            
+            .cancelar:hover {
+                
+                cursor: pointer;
+                color: white;
+                background-color: red;
+                transition: linear 100ms;
+            }
+            
+            .cadastrar {
+                
+                display: none;
+                background-color: #5a5;
+                color: white;
+                transition: linear 100ms;
+            }
+            
+            .cadastrar_cancelado {
+                
+                background-color: #9a9;
+                color: white;
+            }
+            
+            .cadastrar:hover {
+                
+                background-color: #0a0;
+                cursor: pointer;
+                transition: linear 100ms;
+            }
+            
+            .salvar {
+                
+                display: none;
+                margin-right: 10px;
+                background-color: #5a5;
+                color: white;
+                transition: linear 100ms;
+                
+            }
+            
+            .salvar_cancelado {
+            
+                margin-right: 10px;
+                background-color: #9a9;
+                color: white;
+                
+            }
+            
+            .salvar:hover {
+                
+                background-color: #0a0;
+                cursor: pointer;
+                transition: linear 100ms;
+                
+            }
+            
+            .editar {
+                
+                display: none;
+                margin-right: 10px;
+                background-color: #ddd;
+                transition: linear 100ms;
+                
+            }
+            
+            .editar:hover {
+                
+                cursor: pointer;
+                color: white;
+                background-color: #000;
+                transition: linear 100ms;
+            }
+            
+            .excluir {
+                
+                display: none;
+                color: white;
+                background-color: #a00;
+                transition: linear 100ms;
+            }
+            
+            .excluir:hover {
+                
+                cursor: pointer;
+                background-color: red;
+                transition: linear 100ms;
+            }
+            
+            #modal-produto .aviso {
+                
+                font-size: 14px;
+                color: #900;
+                
+            }
+            
+            
+            .secoes {
+            
+                display: flex;
+                flex-direction: row;
+                margin: 8px;
+                justify-content: center;
+            
+            }
+            
+            .secao {
+                
+                color: white;
+                border: 2px solid white;
+                border-radius: 5px;
+                background-color: #5a5;
+                margin-right: 10px;
+                
+                width: 22px;
+                height: 28px;
+                
+                text-align: center;
+            
+            }
+            
+            .secao-selecionado {
+            
+                color: white;
+                border: 2px solid white;
+                border-radius: 5px;
+                background-color: #050;
+                margin-right: 10px;
+                
+                width: 22px;
+                height: 28px;
+                
+                text-align: center;
+            
+            }
+            
+            .secao:hover {
+                cursor: pointer;
+                border: 2px solid #050;
+            }
